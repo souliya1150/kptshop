@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { InventoryItem } from '@/types/inventory';
-import { PlusIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { Toaster, toast } from 'react-hot-toast';
+import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { toast } from 'react-hot-toast';
 import AddItemModal from '@/components/AddItemModal';
 import EditItemModal from '@/components/EditItemModal';
 import CategoryModal from '@/components/CategoryModal';
