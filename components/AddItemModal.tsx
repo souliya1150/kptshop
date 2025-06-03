@@ -56,6 +56,13 @@ export default function AddItemModal({ isOpen, onClose, onItemAdded, categories 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate that an image has been uploaded
+    if (!formData.image_url) {
+      toast.error('Please upload an image');
+      return;
+    }
+    
     setIsLoading(true);
 
     try {
