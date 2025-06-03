@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
+import { cloudinary } from '@/lib/cloudinary';
 
 export async function POST(request: Request) {
   try {
@@ -17,17 +16,23 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Create a unique filename
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
-    const filename = `${uniqueSuffix}-${file.name}`;
-    
-    // Save to public directory
-    const path = join(process.cwd(), 'public/uploads', filename);
-    await writeFile(path, buffer);
+    // Convert buffer to base64
+    const base64String = buffer.toString('base64');
+    const dataURI = `data:${file.type};base64,${base64String}`;
 
-    // Return the URL
-    const url = `/uploads/${filename}`;
-    return NextResponse.json({ url });
+    // Upload to Cloudinary
+    const result = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload(dataURI, {
+        folder: 'kptshop',
+        resource_type: 'auto',
+      }, (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      });
+    });
+
+    // Return the Cloudinary URL
+    return NextResponse.json({ url: (result as any).secure_url });
   } catch (error) {
     console.error('Error uploading file:', error);
     return NextResponse.json(
