@@ -72,7 +72,7 @@ export default function EditItemModal({ isOpen, onClose, onItemUpdated, item, ca
     setIsLoading(true);
 
     try {
-      const response = await fetch(`/api/inventory/${item._id}`, {
+      const response = await fetch(`/.netlify/functions/inventory-id?id=${item._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -80,7 +80,10 @@ export default function EditItemModal({ isOpen, onClose, onItemUpdated, item, ca
         body: JSON.stringify(formData),
       });
 
-      if (!response.ok) throw new Error('Failed to update item');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update item');
+      }
 
       toast.success('Item updated successfully');
       onItemUpdated();

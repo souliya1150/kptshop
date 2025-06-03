@@ -66,7 +66,7 @@ export default function AddItemModal({ isOpen, onClose, onItemAdded, categories 
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/inventory', {
+      const response = await fetch('/.netlify/functions/inventory', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -74,7 +74,10 @@ export default function AddItemModal({ isOpen, onClose, onItemAdded, categories 
         body: JSON.stringify(formData),
       });
 
-      if (!response.ok) throw new Error('Failed to add item');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to add item');
+      }
 
       toast.success('Item added successfully');
       onItemAdded();

@@ -43,7 +43,7 @@ export default function Home() {
 
   const fetchItems = async () => {
     try {
-      const response = await fetch('/api/inventory');
+      const response = await fetch('/.netlify/functions/inventory');
       if (!response.ok) throw new Error('Failed to fetch items');
       const data = await response.json();
       setItems(data);
@@ -62,7 +62,7 @@ export default function Home() {
 
   const handleDelete = async (id: string) => {
     try {
-      const response = await fetch(`/api/inventory/${id}`, {
+      const response = await fetch(`/.netlify/functions/inventory-id?id=${id}`, {
         method: 'DELETE',
       });
 
@@ -88,12 +88,12 @@ export default function Home() {
 
   const handleUpdateCategory = async (itemId: string, category: string) => {
     try {
-      const response = await fetch('/api/inventory/update-categories', {
-        method: 'POST',
+      const response = await fetch(`/.netlify/functions/inventory-id?id=${itemId}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ itemId, category }),
+        body: JSON.stringify({ category }),
       });
 
       if (!response.ok) throw new Error('Failed to update category');
