@@ -32,7 +32,14 @@ export async function POST(request: Request) {
     });
 
     // Return the Cloudinary URL
-    return NextResponse.json({ url: (result as any).secure_url });
+    // Define a type for the result to avoid using 'any'
+    type CloudinaryUploadResult = {
+      secure_url: string;
+      [key: string]: unknown;
+    };
+
+    const { secure_url } = result as CloudinaryUploadResult;
+    return NextResponse.json({ url: secure_url });
   } catch (error) {
     console.error('Error uploading file:', error);
     return NextResponse.json(
