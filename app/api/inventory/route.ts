@@ -7,7 +7,8 @@ export async function GET() {
     await connectDB();
     const items = await Inventory.find().sort({ createdAt: -1 });
     return NextResponse.json(items);
-  } catch{
+  } catch (err: unknown) {
+    console.error('GET inventory error:', err); // now using 'err'
     return NextResponse.json(
       { error: 'Error fetching inventory items' },
       { status: 500 }
@@ -21,10 +22,11 @@ export async function POST(request: Request) {
     const data = await request.json();
     const item = await Inventory.create(data);
     return NextResponse.json(item, { status: 201 });
-  } catch {
+  } catch (err: unknown) {
+    console.error('POST inventory error:', err); // now using 'err'
     return NextResponse.json(
       { error: 'Error creating inventory item' },
       { status: 500 }
     );
   }
-} 
+}
