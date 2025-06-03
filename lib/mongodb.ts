@@ -10,7 +10,7 @@ declare global {
   var mongoose: MongooseCache | undefined;
 }
 
-const MONGODB_URI = process.env.MONGODB_URI!;
+const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable inside .env');
@@ -30,20 +30,22 @@ async function connectDB() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
-      ssl: true,
-      tls: true,
-      tlsAllowInvalidCertificates: true,
-      tlsAllowInvalidHostnames: true,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts);
+    try {
+      cached.promise = mongoose.connect(MONGODB_URI as string, opts);
+    } catch (error) {
+      console.error('MongoDB connection error:', error);
+      throw new Error('Failed to connect to MongoDB');
+    }
   }
 
   try {
     cached.conn = await cached.promise;
   } catch (e) {
     cached.promise = null;
-    throw e;
+    console.error('MongoDB connection error:', e);
+    throw new Error('Failed to connect to MongoDB');
   }
 
   return cached.conn;
