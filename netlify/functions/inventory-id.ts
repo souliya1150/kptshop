@@ -3,7 +3,7 @@ import connectDB from '../../lib/mongodb';
 import Inventory from '../../models/Inventory';
 import { deleteImage } from '../../lib/deleteImage';
 
-const handler: Handler = async (event, context) => {
+const handler: Handler = async (event) => {
   // Set CORS headers
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -21,8 +21,13 @@ const handler: Handler = async (event, context) => {
   }
 
   try {
-    const id = event.path.split('/').pop();
+    console.log('Request method:', event.httpMethod);
+    console.log('Query parameters:', event.queryStringParameters);
+    console.log('Request body:', event.body);
+
+    const id = event.queryStringParameters?.id;
     if (!id) {
+      console.log('No ID provided in query parameters');
       return {
         statusCode: 400,
         headers,
@@ -30,13 +35,17 @@ const handler: Handler = async (event, context) => {
       };
     }
 
+    console.log('Connecting to database...');
     await connectDB();
+    console.log('Database connected successfully');
 
     switch (event.httpMethod) {
       case 'DELETE':
         // Find the item first to get the image URL
+        console.log('Finding item to delete:', id);
         const itemToDelete = await Inventory.findById(id);
         if (!itemToDelete) {
+          console.log('Item not found for deletion:', id);
           return {
             statusCode: 404,
             headers,
@@ -46,6 +55,7 @@ const handler: Handler = async (event, context) => {
 
         // Delete the image file
         try {
+          console.log('Deleting image:', itemToDelete.image_url);
           await deleteImage(itemToDelete.image_url);
         } catch (error) {
           console.error('Error deleting image file:', error);
@@ -53,6 +63,7 @@ const handler: Handler = async (event, context) => {
         }
 
         // Delete the item from the database
+        console.log('Deleting item from database:', id);
         await Inventory.findByIdAndDelete(id);
         return {
           statusCode: 200,
@@ -61,7 +72,11 @@ const handler: Handler = async (event, context) => {
         };
 
       case 'PUT':
+        console.log('Parsing request body for update');
         const data = JSON.parse(event.body || '{}');
+        console.log('Update data:', data);
+
+        console.log('Updating item:', id);
         const updatedItem = await Inventory.findByIdAndUpdate(
           id,
           { $set: data },
@@ -69,6 +84,7 @@ const handler: Handler = async (event, context) => {
         );
 
         if (!updatedItem) {
+          console.log('Item not found for update:', id);
           return {
             statusCode: 404,
             headers,
@@ -76,6 +92,7 @@ const handler: Handler = async (event, context) => {
           };
         }
 
+        console.log('Item updated successfully:', updatedItem);
         return {
           statusCode: 200,
           headers,
@@ -83,6 +100,7 @@ const handler: Handler = async (event, context) => {
         };
 
       default:
+        console.log('Method not allowed:', event.httpMethod);
         return {
           statusCode: 405,
           headers,
@@ -90,7 +108,11 @@ const handler: Handler = async (event, context) => {
         };
     }
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Detailed error:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      error
+    });
     return {
       statusCode: 500,
       headers,
