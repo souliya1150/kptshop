@@ -7,6 +7,7 @@ export async function GET() {
     await connectDB();
     const items = await Inventory.find().sort({ createdAt: -1 });
     return NextResponse.json(items);
+
   } catch(error:unknown) 
 {
   console.error('Error fetching inventory items:', error);
@@ -30,4 +31,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-} 
+}
