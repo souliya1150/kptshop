@@ -5,13 +5,14 @@ import { deleteImage } from '@/lib/deleteImage';
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     await connectDB();
     
     // Find the item first to get the image URL
-    const item = await Inventory.findById(params.id);
+    const item = await Inventory.findById(id);
     if (!item) {
       return NextResponse.json(
         { error: 'Item not found' },
@@ -28,7 +29,7 @@ export async function DELETE(
     }
 
     // Delete the item from the database
-    await Inventory.findByIdAndDelete(params.id);
+    await Inventory.findByIdAndDelete(id);
 
     return NextResponse.json({ message: 'Item deleted successfully' });
   } catch (error) {
@@ -42,14 +43,15 @@ export async function DELETE(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     await connectDB();
     const data = await request.json();
     
     const item = await Inventory.findByIdAndUpdate(
-      params.id,
+      id,
       { $set: data },
       { new: true, runValidators: true }
     );

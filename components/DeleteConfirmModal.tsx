@@ -58,7 +58,7 @@ export default function DeleteConfirmModal({
                 </Dialog.Title>
                 <div className="mt-2">
                   <p className="text-sm text-gray-500 text-center">
-                    Are you sure you want to delete "{itemName}"? This action cannot be undone.
+                    Are you sure you want to delete &quot;{itemName}&quot;? This action cannot be undone.
                   </p>
                 </div>
 

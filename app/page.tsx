@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { InventoryItem } from '@/types/inventory';
-import { PlusIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { Toaster, toast } from 'react-hot-toast';
+import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { toast } from 'react-hot-toast';
 import AddItemModal from '@/components/AddItemModal';
 import EditItemModal from '@/components/EditItemModal';
 import CategoryModal from '@/components/CategoryModal';
 import DeleteConfirmModal from '@/components/DeleteConfirmModal';
+import Image from 'next/image';
 
 interface Category {
   _id: string;
@@ -108,17 +109,17 @@ export default function Home() {
   const filteredItems = items.filter((item) => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.description.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     // Debug logging
     console.log('Selected Category:', selectedCategory);
     console.log('Item Category:', item.category);
-    
+
     // Use exact case matching since database stores original case
-    const matchesCategory = selectedCategory === 'All' || 
+    const matchesCategory = selectedCategory === 'All' ||
       item.category === selectedCategory;
-    
+
     console.log('Matches:', matchesCategory);
-    
+
     return matchesSearch && matchesCategory;
   });
 
@@ -198,9 +199,11 @@ export default function Home() {
               className="bg-gray-800 rounded-lg shadow overflow-hidden"
             >
               <div className="relative h-48 sm:h-56">
-                <img
+                <Image
                   src={item.image_url}
                   alt={item.name}
+                  width={1000}
+                  height={1000}
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute top-2 right-2 flex space-x-2">

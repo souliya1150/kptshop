@@ -4,7 +4,7 @@ import { XMarkIcon, PhotoIcon } from '@heroicons/react/24/outline';
 import { InventoryItem, CreateInventoryItem } from '@/types/inventory';
 import { toast } from 'react-hot-toast';
 import { uploadImage } from '@/lib/uploadImage';
-
+import Image from 'next/image';
 interface Category {
   _id: string;
   name: string;
@@ -143,9 +143,11 @@ export default function EditItemModal({ isOpen, onClose, onItemUpdated, item, ca
                     <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
                       <div className="space-y-1 text-center">
                         {imagePreview ? (
-                          <img
+                          <Image
                             src={imagePreview}
                             alt="Preview"
+                            width={1000}
+                            height={1000}
                             className="mx-auto h-32 w-32 object-cover"
                           />
                         ) : (
