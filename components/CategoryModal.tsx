@@ -21,7 +21,7 @@ export default function CategoryModal({ isOpen, onClose, onCategoryAdded }: Cate
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/categories', {
+      const response = await fetch('/.netlify/functions/categories', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
