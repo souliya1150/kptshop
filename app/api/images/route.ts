@@ -104,7 +104,7 @@ export async function GET(request: Request) {
     const folder = searchParams.get('folder');
     const tag = searchParams.get('tag');
 
-    const query: Record<string, any> = {};
+    const query: ImageQuery = {};
     if (folder) query.folder = folder;
     if (tag) query.tags = tag;
 
