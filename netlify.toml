@@ -1,11 +1,13 @@
 [build]
   command = "npm run build"
   publish = ".next"
-  functions = "netlify/functions"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
 
 [[redirects]]
   from = "/api/*"
-  to = "/.netlify/functions/:splat"
+  to = "/.netlify/functions/api/:splat"
   status = 200
 
 [functions]
