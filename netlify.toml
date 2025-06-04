@@ -8,6 +8,7 @@
 [functions]
   node_bundler = "esbuild"
   external_node_modules = ["mongoose"]
+  directory = "netlify/functions"
 
 [[redirects]]
   from = "/api/*"
@@ -18,4 +19,5 @@
 [[redirects]]
   from = "/*"
   to = "/index.html"
-  status = 200 
+  status = 200
+  force = true 

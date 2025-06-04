@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FolderIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import toast from 'react-hot-toast';
 
 interface Folder {
   _id: string;
@@ -23,7 +24,7 @@ export default function FolderManager({ onSelect, currentFolder }: FolderManager
   const fetchFolders = async (parent: string | null = null) => {
     try {
       setLoading(true);
-      const url = new URL('/api/folders', window.location.origin);
+      const url = new URL('/.netlify/functions/api/folders', window.location.origin);
       if (parent) {
         url.searchParams.append('parent', parent);
       }
@@ -34,9 +35,16 @@ export default function FolderManager({ onSelect, currentFolder }: FolderManager
       }
 
       const data = await response.json();
+      if (!data) {
+        toast.error('No folders found');
+        setFolders([]);
+        return;
+      }
       setFolders(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load folders');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load folders';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -48,10 +56,13 @@ export default function FolderManager({ onSelect, currentFolder }: FolderManager
 
   const handleCreateFolder = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newFolderName.trim()) return;
+    if (!newFolderName.trim()) {
+      toast.error('Please enter a folder name');
+      return;
+    }
 
     try {
-      const response = await fetch('/api/folders', {
+      const response = await fetch('/.netlify/functions/api/folders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -67,11 +78,19 @@ export default function FolderManager({ onSelect, currentFolder }: FolderManager
       }
 
       const newFolder = await response.json();
+      if (!newFolder) {
+        toast.error('Failed to create folder');
+        return;
+      }
+
       setFolders([...folders, newFolder]);
       setNewFolderName('');
       setShowNewFolderInput(false);
+      toast.success('Folder created successfully');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create folder');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create folder';
+      setError(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
@@ -129,19 +148,23 @@ export default function FolderManager({ onSelect, currentFolder }: FolderManager
       )}
 
       <div className="space-y-1">
-        {folders.map((folder) => (
-          <button
-            key={folder._id}
-            onClick={() => onSelect(folder)}
-            className={`w-full flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 ${
-              currentFolder === folder._id ? 'bg-gray-100' : ''
-            }`}
-          >
-            <FolderIcon className="w-5 h-5 text-gray-500" />
-            <span className="flex-1 text-left">{folder.name}</span>
-            <ChevronRightIcon className="w-4 h-4 text-gray-400" />
-          </button>
-        ))}
+        {folders.length === 0 ? (
+          <div className="text-center text-gray-500 py-4">No folders found</div>
+        ) : (
+          folders.map((folder) => (
+            <button
+              key={folder._id}
+              onClick={() => onSelect(folder)}
+              className={`w-full flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 ${
+                currentFolder === folder._id ? 'bg-gray-100' : ''
+              }`}
+            >
+              <FolderIcon className="w-5 h-5 text-gray-500" />
+              <span className="flex-1 text-left">{folder.name}</span>
+              <ChevronRightIcon className="w-4 h-4 text-gray-400" />
+            </button>
+          ))
+        )}
       </div>
     </div>
   );

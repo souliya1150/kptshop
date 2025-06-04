@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import toast from 'react-hot-toast';
 
 interface ImageData {
   _id: string;
@@ -29,7 +30,7 @@ export default function ImageGallery({ onSelect, folder }: ImageGalleryProps) {
     const fetchImages = async () => {
       try {
         setLoading(true);
-        const url = new URL('/api/images', window.location.origin);
+        const url = new URL('/.netlify/functions/api/images', window.location.origin);
         if (folder) {
           url.searchParams.append('folder', folder);
         }
@@ -40,9 +41,16 @@ export default function ImageGallery({ onSelect, folder }: ImageGalleryProps) {
         }
 
         const data = await response.json();
+        if (!data) {
+          toast.error('No images found');
+          setImages([]);
+          return;
+        }
         setImages(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load images');
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load images';
+        setError(errorMessage);
+        toast.error(errorMessage);
       } finally {
         setLoading(false);
       }

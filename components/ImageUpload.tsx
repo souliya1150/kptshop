@@ -26,7 +26,7 @@ export default function ImageUpload({ onUploadComplete, folder }: ImageUploadPro
         formData.append('folder', folder);
       }
 
-      const response = await fetch('/api/images', {
+      const response = await fetch('/.netlify/functions/api/images', {
         method: 'POST',
         body: formData,
       });
