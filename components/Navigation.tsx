@@ -3,11 +3,11 @@ import { PhotoIcon } from '@heroicons/react/24/outline';
 
 export default function Navigation() {
   return (
-    <nav className="bg-white shadow-sm">
+    <nav className="bg-gray-800 shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <Link href="/" className="text-xl font-semibold text-gray-800">
+            <Link href="/" className="text-xl font-semibold text-white">
               KPT Shop
             </Link>
           </div>
