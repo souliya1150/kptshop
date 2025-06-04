@@ -31,11 +31,12 @@ export default function ImageUpload({ onUploadComplete, folder }: ImageUploadPro
         body: formData,
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(`Upload failed: ${response.statusText}`);
+        throw new Error(data.details || data.error || 'Upload failed');
       }
 
-      const data = await response.json();
       onUploadComplete(data.url);
       setRetryCount(0);
     } catch (err) {
@@ -53,7 +54,8 @@ export default function ImageUpload({ onUploadComplete, folder }: ImageUploadPro
       'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp']
     },
     maxSize: 5 * 1024 * 1024, // 5MB
-    disabled: uploading
+    disabled: uploading,
+    multiple: false
   });
 
   const handleRetry = () => {

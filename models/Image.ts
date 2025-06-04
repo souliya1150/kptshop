@@ -3,15 +3,15 @@ import mongoose from 'mongoose';
 const imageSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'Name is required'],
+    required: true,
   },
   url: {
     type: String,
-    required: [true, 'URL is required'],
+    required: true,
   },
   public_id: {
     type: String,
-    required: [true, 'Cloudinary public ID is required'],
+    required: true,
   },
   folder: {
     type: mongoose.Schema.Types.ObjectId,
@@ -31,6 +31,4 @@ const imageSchema = new mongoose.Schema({
   timestamps: true,
 });
 
-const Image = mongoose.models.Image || mongoose.model('Image', imageSchema);
-
-export default Image; 
+export default mongoose.models.Image || mongoose.model('Image', imageSchema); 

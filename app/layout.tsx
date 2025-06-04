@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Noto_Sans_Lao } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
 
-const inter = Inter({ subsets: ["latin"] });
+const notoSansLao = Noto_Sans_Lao({
+  subsets: ["lao"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-noto-sans-lao",
+});
 
 export const metadata: Metadata = {
   title: "KPT Shop",
@@ -16,8 +20,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="lo">
+      <body className={`${notoSansLao.variable} font-sans`}>
         <Navigation />
         <main>{children}</main>
       </body>

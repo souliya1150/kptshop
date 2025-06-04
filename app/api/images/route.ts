@@ -26,7 +26,10 @@ interface ImageQuery {
 
 export async function POST(request: Request) {
   try {
+    // Connect to MongoDB
     await connectDB();
+
+    // Get form data
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const folder = formData.get('folder') as string;
@@ -45,20 +48,27 @@ export async function POST(request: Request) {
 
     // Upload to Cloudinary
     const result = await new Promise<CloudinaryUploadResult>((resolve, reject) => {
-      cloudinary.uploader.upload_stream(
+      const uploadStream = cloudinary.uploader.upload_stream(
         {
           folder: folder || 'kptshop',
           resource_type: 'auto',
         },
         (error: Error | undefined, result: CloudinaryUploadResult | undefined) => {
-          if (error) reject(error);
-          if (!result) reject(new Error('No result from Cloudinary'));
+          if (error) {
+            console.error('Cloudinary upload error:', error);
+            reject(error);
+          }
+          if (!result) {
+            reject(new Error('No result from Cloudinary'));
+          }
           resolve(result as CloudinaryUploadResult);
         }
-      ).end(buffer);
+      );
+
+      uploadStream.end(buffer);
     });
 
-    // Save to database
+    // Save to MongoDB
     const image = await Image.create({
       name: file.name,
       url: result.secure_url,
@@ -77,7 +87,11 @@ export async function POST(request: Request) {
   } catch (error: unknown) {
     console.error('Error uploading image:', error);
     return NextResponse.json(
-      { error: 'Error uploading image', details: error instanceof Error ? error.message : 'Unknown error' },
+      { 
+        error: 'Error uploading image', 
+        details: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      },
       { status: 500 }
     );
   }
@@ -90,7 +104,7 @@ export async function GET(request: Request) {
     const folder = searchParams.get('folder');
     const tag = searchParams.get('tag');
 
-    const query: ImageQuery = {};
+    const query: Record<string, any> = {};
     if (folder) query.folder = folder;
     if (tag) query.tags = tag;
 
