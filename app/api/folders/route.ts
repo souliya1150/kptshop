@@ -31,23 +31,24 @@ export async function POST(request: Request) {
   }
 }
 
+interface FolderQuery {
+  parent?: string | null;
+}
+
 export async function GET(request: Request) {
   try {
     await connectDB();
     const { searchParams } = new URL(request.url);
     const parent = searchParams.get('parent');
 
-    const query: any = {};
+    const query: FolderQuery = {};
     if (parent) {
       query.parent = parent;
     } else {
-      query.parent = null; // Get root folders
+      query.parent = null;
     }
 
-    const folders = await Folder.find(query)
-      .sort({ order: 1, name: 1 })
-      .populate('parent');
-
+    const folders = await Folder.find(query).sort({ name: 1 });
     return NextResponse.json(folders);
   } catch (error: unknown) {
     console.error('Error fetching folders:', error);

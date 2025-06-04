@@ -7,18 +7,14 @@ import FolderManager from '@/components/FolderManager';
 
 export default function ImagesPage() {
   const [currentFolder, setCurrentFolder] = useState<string | null>(null);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const handleFolderSelect = (folder: { _id: string }) => {
     setCurrentFolder(folder._id);
   };
 
-  const handleImageSelect = (image: { url: string }) => {
-    setSelectedImage(image.url);
-  };
-
   const handleUploadComplete = (imageUrl: string) => {
-    setSelectedImage(imageUrl);
+    // Optionally refresh the gallery or show a success message
+    console.log('Upload complete:', imageUrl);
   };
 
   return (
@@ -41,7 +37,6 @@ export default function ImagesPage() {
           <div>
             <h2 className="text-lg font-semibold mb-4">Images</h2>
             <ImageGallery
-              onSelect={handleImageSelect}
               folder={currentFolder || undefined}
             />
           </div>
