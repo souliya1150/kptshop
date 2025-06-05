@@ -2,10 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Gallery from '@/models/Gallery';
 
-export async function GET(): Promise<NextResponse> {
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
+    console.log('Connecting to MongoDB...');
     await connectDB();
+    
+    console.log('Fetching images...');
     const images = await Gallery.find({}).sort({ createdAt: -1 });
+    console.log('Found images:', images.length);
+    
     return NextResponse.json(images);
   } catch (err) {
     console.error('Error fetching images:', err);

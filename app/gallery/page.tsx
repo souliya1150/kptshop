@@ -30,13 +30,27 @@ export default function GalleryPage() {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('/api/gallery');
+      console.log('Fetching images from API...');
+      const response = await fetch('/api/gallery', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        cache: 'no-store'
+      });
+      
+      console.log('API response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json();
+        console.error('API error:', errorData);
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
+      
       const data = await response.json() as GalleryItem[];
+      console.log('Fetched images:', data);
       setImages(data);
-      const uniqueFolders = Array.from(new Set(data.map((img) => img.folder)));
+      const uniqueFolders = Array.from(new Set(data.map((img: GalleryItem) => img.folder)));
       setFolders(uniqueFolders);
     } catch (error) {
       console.error('Error fetching images:', error);
@@ -83,6 +97,7 @@ export default function GalleryPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(imageData),
+        cache: 'no-store'
       });
 
       console.log('MongoDB response status:', response.status);
