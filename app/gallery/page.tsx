@@ -30,20 +30,22 @@ export default function GalleryPage() {
     try {
       setLoading(true);
       setError(null);
-      console.log('Fetching images from API...');
+      console.log('Fetching images...');
+      
       const response = await fetch('/api/gallery', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
-        cache: 'no-store'
+        cache: 'no-store',
+        next: { revalidate: 0 }
       });
       
-      console.log('API response status:', response.status);
+      console.log('Fetch response status:', response.status);
       
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('API error:', errorData);
+        console.error('Fetch error:', errorData);
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
       
@@ -69,11 +71,9 @@ export default function GalleryPage() {
         throw new Error('Invalid upload result');
       }
 
-      // Get the current folder or use default
       const currentFolder = selectedFolder === 'all' ? 'default' : selectedFolder;
       console.log('Current folder:', currentFolder);
 
-      // Prepare image data for MongoDB
       const imageData = {
         name: result.info.original_filename || 'New Image',
         detail: 'Add details here',
@@ -88,30 +88,29 @@ export default function GalleryPage() {
         updatedAt: new Date()
       };
 
-      console.log('Sending to MongoDB:', imageData);
+      console.log('Sending to API:', imageData);
 
-      // Save to MongoDB
       const response = await fetch('/api/gallery', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(imageData),
-        cache: 'no-store'
+        cache: 'no-store',
+        next: { revalidate: 0 }
       });
 
-      console.log('MongoDB response status:', response.status);
+      console.log('API response status:', response.status);
       
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('MongoDB error:', errorData);
-        throw new Error(errorData.error || 'Failed to save image to database');
+        console.error('API error:', errorData);
+        throw new Error(errorData.error || 'Failed to save image');
       }
 
       const savedImage = await response.json();
       console.log('Saved image:', savedImage);
 
-      // Refresh the gallery
       await fetchImages();
       setError(null);
     } catch (error) {

@@ -2,21 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Gallery from '@/models/Gallery';
 
+// Force dynamic rendering
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 export const revalidate = 0;
 
-export async function GET(request: NextRequest): Promise<NextResponse> {
+// GET handler
+export async function GET() {
   try {
-    console.log('Connecting to MongoDB...');
+    console.log('GET /api/gallery - Connecting to MongoDB...');
     await connectDB();
     
-    console.log('Fetching images...');
     const images = await Gallery.find({}).sort({ createdAt: -1 });
-    console.log('Found images:', images.length);
+    console.log(`Found ${images.length} images`);
     
     return NextResponse.json(images);
-  } catch (err) {
-    console.error('Error fetching images:', err);
+  } catch (error) {
+    console.error('GET /api/gallery - Error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch images' },
       { status: 500 }
@@ -24,14 +26,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 }
 
-export async function POST(request: NextRequest): Promise<NextResponse> {
+// POST handler
+export async function POST(request: NextRequest) {
   try {
-    console.log('Connecting to MongoDB...');
+    console.log('POST /api/gallery - Connecting to MongoDB...');
     await connectDB();
     
-    console.log('Parsing request body...');
     const body = await request.json();
-    console.log('Request body:', body);
+    console.log('POST /api/gallery - Request body:', body);
 
     // Validate required fields
     const requiredFields = ['name', 'detail', 'imageUrl', 'publicId', 'width', 'height', 'format', 'bytes'];
@@ -45,17 +47,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }
     }
 
-    // Ensure folder is set
-    const folder = body.folder || 'default';
-    console.log('Using folder:', folder);
-
-    // Create new image with all required fields
-    console.log('Creating image in MongoDB...');
+    // Create new image
     const image = await Gallery.create({
       name: body.name,
       detail: body.detail,
       imageUrl: body.imageUrl,
-      folder: folder,
+      folder: body.folder || 'default',
       publicId: body.publicId,
       width: body.width,
       height: body.height,
@@ -65,18 +62,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       updatedAt: new Date()
     });
 
-    // Verify the image was created
-    if (!image) {
-      console.error('Failed to create image in database');
-      throw new Error('Failed to create image in database');
-    }
-
-    console.log('Image created successfully:', image);
+    console.log('POST /api/gallery - Image created:', image);
     return NextResponse.json(image, { status: 201 });
-  } catch (err) {
-    console.error('Error creating image:', err);
+  } catch (error) {
+    console.error('POST /api/gallery - Error:', error);
     return NextResponse.json(
-      { error: 'Failed to create image in database', details: err instanceof Error ? err.message : 'Unknown error' },
+      { error: 'Failed to create image' },
       { status: 500 }
     );
   }

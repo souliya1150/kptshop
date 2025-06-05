@@ -3,15 +3,23 @@
   publish = ".next"
   functions = "netlify/functions"
 
+[build.environment]
+  NEXT_TELEMETRY_DISABLED = "1"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
 [[redirects]]
   from = "/api/gallery"
   to = "/.netlify/functions/gallery"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/api/gallery/*"
   to = "/.netlify/functions/gallery-id/:splat"
   status = 200
+  force = true
 
 [functions]
   node_bundler = "esbuild"
