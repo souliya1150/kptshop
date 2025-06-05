@@ -131,7 +131,7 @@ export default function GalleryPage() {
       <div className="mb-8">
         <CldUploadWidget
           options={{
-            cloudName: "dhhyonknp",
+            cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
             uploadPreset: "gallery_upload"
           }}
           onUpload={handleUpload}
