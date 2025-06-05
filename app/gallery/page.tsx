@@ -18,6 +18,8 @@ export default function GalleryPage() {
   const [selectedFolder, setSelectedFolder] = useState<string>('all');
   const [isEditing, setIsEditing] = useState(false);
   const [currentImage, setCurrentImage] = useState<GalleryItem | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchImages();
@@ -25,13 +27,21 @@ export default function GalleryPage() {
 
   const fetchImages = async () => {
     try {
+      setLoading(true);
+      setError(null);
       const response = await fetch('/api/gallery');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json() as GalleryItem[];
       setImages(data);
       const uniqueFolders = Array.from(new Set(data.map((img) => img.folder)));
       setFolders(uniqueFolders);
     } catch (error) {
       console.error('Error fetching images:', error);
+      setError('Failed to load images. Please try again later.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -53,11 +63,15 @@ export default function GalleryPage() {
           folder: 'default',
         }),
       });
-      if (response.ok) {
-        fetchImages();
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      await fetchImages();
     } catch (error) {
       console.error('Error uploading image:', error);
+      setError('Failed to upload image. Please try again.');
     }
   };
 
@@ -71,6 +85,7 @@ export default function GalleryPage() {
     if (!currentImage) return;
 
     try {
+      setError(null);
       const response = await fetch(`/api/gallery/${currentImage._id}`, {
         method: 'PUT',
         headers: {
@@ -78,13 +93,17 @@ export default function GalleryPage() {
         },
         body: JSON.stringify(currentImage),
       });
-      if (response.ok) {
-        setIsEditing(false);
-        setCurrentImage(null);
-        fetchImages();
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      setIsEditing(false);
+      setCurrentImage(null);
+      await fetchImages();
     } catch (error) {
       console.error('Error updating image:', error);
+      setError('Failed to update image. Please try again.');
     }
   };
 
@@ -92,14 +111,19 @@ export default function GalleryPage() {
     if (!confirm('Are you sure you want to delete this image?')) return;
 
     try {
+      setError(null);
       const response = await fetch(`/api/gallery/${id}`, {
         method: 'DELETE',
       });
-      if (response.ok) {
-        fetchImages();
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      await fetchImages();
     } catch (error) {
       console.error('Error deleting image:', error);
+      setError('Failed to delete image. Please try again.');
     }
   };
 
@@ -110,6 +134,12 @@ export default function GalleryPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Image Gallery</h1>
+
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
 
       {/* Folder Selection */}
       <div className="mb-6">
@@ -147,6 +177,13 @@ export default function GalleryPage() {
         </CldUploadWidget>
       </div>
 
+      {/* Loading State */}
+      {loading && (
+        <div className="text-center py-4">
+          Loading images...
+        </div>
+      )}
+
       {/* Edit Modal */}
       {isEditing && currentImage && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
@@ -160,6 +197,7 @@ export default function GalleryPage() {
                   value={currentImage.name}
                   onChange={(e) => setCurrentImage({ ...currentImage, name: e.target.value })}
                   className="w-full p-2 border rounded"
+                  required
                 />
               </div>
               <div className="mb-4">
@@ -168,6 +206,7 @@ export default function GalleryPage() {
                   value={currentImage.detail}
                   onChange={(e) => setCurrentImage({ ...currentImage, detail: e.target.value })}
                   className="w-full p-2 border rounded"
+                  required
                 />
               </div>
               <div className="mb-4">
@@ -177,6 +216,7 @@ export default function GalleryPage() {
                   value={currentImage.folder}
                   onChange={(e) => setCurrentImage({ ...currentImage, folder: e.target.value })}
                   className="w-full p-2 border rounded"
+                  required
                 />
               </div>
               <div className="flex justify-end gap-2">
@@ -200,39 +240,41 @@ export default function GalleryPage() {
       )}
 
       {/* Image Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredImages.map((image) => (
-          <div key={image._id} className="border rounded-lg overflow-hidden">
-            <div className="relative h-48">
-              <Image
-                src={image.imageUrl}
-                alt={image.name}
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div className="p-4">
-              <h3 className="font-bold">{image.name}</h3>
-              <p className="text-sm text-gray-600 mb-2">{image.detail}</p>
-              <p className="text-xs text-gray-500">Folder: {image.folder}</p>
-              <div className="mt-4 flex gap-2">
-                <button
-                  onClick={() => handleEdit(image)}
-                  className="px-3 py-1 bg-blue-500 text-white rounded text-sm"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(image._id)}
-                  className="px-3 py-1 bg-red-500 text-white rounded text-sm"
-                >
-                  Delete
-                </button>
+      {!loading && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredImages.map((image) => (
+            <div key={image._id} className="border rounded-lg overflow-hidden">
+              <div className="relative h-48">
+                <Image
+                  src={image.imageUrl}
+                  alt={image.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="p-4">
+                <h3 className="font-bold">{image.name}</h3>
+                <p className="text-sm text-gray-600 mb-2">{image.detail}</p>
+                <p className="text-xs text-gray-500">Folder: {image.folder}</p>
+                <div className="mt-4 flex gap-2">
+                  <button
+                    onClick={() => handleEdit(image)}
+                    className="px-3 py-1 bg-blue-500 text-white rounded text-sm"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(image._id)}
+                    className="px-3 py-1 bg-red-500 text-white rounded text-sm"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 } 
