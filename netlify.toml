@@ -4,8 +4,13 @@
   functions = "netlify/functions"
 
 [[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
+  from = "/api/gallery"
+  to = "/.netlify/functions/gallery"
+  status = 200
+
+[[redirects]]
+  from = "/api/gallery/*"
+  to = "/.netlify/functions/gallery-id/:splat"
   status = 200
 
 [functions]
