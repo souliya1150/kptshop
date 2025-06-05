@@ -156,6 +156,12 @@ export default function Home() {
               Manage Categories
             </button>
             <button
+              onClick={() => window.location.href = '/gallery'}
+              className="w-full sm:w-auto bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+            >
+              Image Gallery
+            </button>
+            <button
               onClick={() => setIsAddModalOpen(true)}
               className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
