@@ -73,7 +73,8 @@ export default function GalleryPage() {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save image');
       }
 
       await fetchImages();
@@ -168,11 +169,11 @@ export default function GalleryPage() {
         <select
           value={selectedFolder}
           onChange={(e) => setSelectedFolder(e.target.value)}
-          className="p-2 border rounded"
+          className="p-2 border rounded bg-white text-black"
         >
-          <option value="all">All Folders</option>
+          <option value="all" className="text-black">All Folders</option>
           {folders.map((folder) => (
-            <option key={folder} value={folder}>
+            <option key={folder} value={folder} className="text-black">
               {folder}
             </option>
           ))}
@@ -273,11 +274,11 @@ export default function GalleryPage() {
                 <select
                   value={currentImage.folder}
                   onChange={(e) => setCurrentImage({ ...currentImage, folder: e.target.value })}
-                  className="w-full p-2 border rounded"
+                  className="w-full p-2 border rounded bg-white text-black"
                   required
                 >
                   {folders.map((folder) => (
-                    <option key={folder} value={folder}>
+                    <option key={folder} value={folder} className="text-black">
                       {folder}
                     </option>
                   ))}

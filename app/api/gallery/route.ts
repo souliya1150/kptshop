@@ -20,8 +20,27 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     await connectDB();
     const body = await request.json();
-    const image = await Gallery.create(body);
-    return NextResponse.json(image);
+
+    // Validate required fields
+    const requiredFields = ['name', 'detail', 'imageUrl', 'publicId', 'width', 'height', 'format', 'bytes'];
+    for (const field of requiredFields) {
+      if (!body[field]) {
+        return NextResponse.json(
+          { error: `Missing required field: ${field}` },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Create new image
+    const image = await Gallery.create({
+      ...body,
+      folder: body.folder || 'default',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    return NextResponse.json(image, { status: 201 });
   } catch (err) {
     console.error('Error creating image:', err);
     return NextResponse.json(
