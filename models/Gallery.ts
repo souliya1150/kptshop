@@ -5,6 +5,11 @@ export interface IGallery extends Document {
   detail: string;
   imageUrl: string;
   folder: string;
+  publicId: string;
+  width: number;
+  height: number;
+  format: string;
+  bytes: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -26,7 +31,28 @@ const GallerySchema = new mongoose.Schema({
   },
   folder: {
     type: String,
+    required: true,
     default: 'default',
+  },
+  publicId: {
+    type: String,
+    required: true,
+  },
+  width: {
+    type: Number,
+    required: true,
+  },
+  height: {
+    type: Number,
+    required: true,
+  },
+  format: {
+    type: String,
+    required: true,
+  },
+  bytes: {
+    type: Number,
+    required: true,
   },
   createdAt: {
     type: Date,

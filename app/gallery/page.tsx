@@ -20,6 +20,7 @@ export default function GalleryPage() {
   const [currentImage, setCurrentImage] = useState<GalleryItem | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [newFolder, setNewFolder] = useState('');
 
   useEffect(() => {
     fetchImages();
@@ -50,18 +51,25 @@ export default function GalleryPage() {
       if (!result.info || typeof result.info === 'string') {
         throw new Error('Invalid upload result');
       }
+
+      const imageData = {
+        name: result.info.original_filename || 'New Image',
+        detail: 'Add details here',
+        imageUrl: result.info.secure_url,
+        folder: selectedFolder === 'all' ? 'default' : selectedFolder,
+        publicId: result.info.public_id,
+        width: result.info.width,
+        height: result.info.height,
+        format: result.info.format,
+        bytes: result.info.bytes
+      };
       
       const response = await fetch('/api/gallery', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: 'New Image',
-          detail: 'Add details here',
-          imageUrl: result.info.secure_url,
-          folder: 'default',
-        }),
+        body: JSON.stringify(imageData),
       });
 
       if (!response.ok) {
@@ -73,6 +81,20 @@ export default function GalleryPage() {
       console.error('Error uploading image:', error);
       setError('Failed to upload image. Please try again.');
     }
+  };
+
+  const handleCreateFolder = () => {
+    if (!newFolder.trim()) {
+      setError('Folder name cannot be empty');
+      return;
+    }
+    if (folders.includes(newFolder.trim())) {
+      setError('Folder already exists');
+      return;
+    }
+    setFolders([...folders, newFolder.trim()]);
+    setSelectedFolder(newFolder.trim());
+    setNewFolder('');
   };
 
   const handleEdit = (image: GalleryItem) => {
@@ -141,8 +163,8 @@ export default function GalleryPage() {
         </div>
       )}
 
-      {/* Folder Selection */}
-      <div className="mb-6">
+      {/* Folder Management */}
+      <div className="mb-6 flex gap-4 items-center">
         <select
           value={selectedFolder}
           onChange={(e) => setSelectedFolder(e.target.value)}
@@ -155,6 +177,22 @@ export default function GalleryPage() {
             </option>
           ))}
         </select>
+
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={newFolder}
+            onChange={(e) => setNewFolder(e.target.value)}
+            placeholder="New folder name"
+            className="p-2 border rounded"
+          />
+          <button
+            onClick={handleCreateFolder}
+            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+          >
+            Create Folder
+          </button>
+        </div>
       </div>
 
       {/* Upload Widget */}
@@ -166,6 +204,7 @@ export default function GalleryPage() {
             sources: ["local", "url", "camera"],
             maxFiles: 1,
             resourceType: "image",
+            folder: selectedFolder === 'all' ? 'default' : selectedFolder,
             styles: {
               palette: {
                 window: "#FFFFFF",
@@ -231,13 +270,18 @@ export default function GalleryPage() {
               </div>
               <div className="mb-4">
                 <label className="block mb-2">Folder</label>
-                <input
-                  type="text"
+                <select
                   value={currentImage.folder}
                   onChange={(e) => setCurrentImage({ ...currentImage, folder: e.target.value })}
                   className="w-full p-2 border rounded"
                   required
-                />
+                >
+                  {folders.map((folder) => (
+                    <option key={folder} value={folder}>
+                      {folder}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="flex justify-end gap-2">
                 <button
@@ -270,6 +314,8 @@ export default function GalleryPage() {
                   alt={image.name}
                   fill
                   className="object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  priority
                 />
               </div>
               <div className="p-4">
