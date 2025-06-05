@@ -48,12 +48,16 @@ export default function GalleryPage() {
 
   const handleUpload = async (result: CloudinaryUploadWidgetResults) => {
     try {
+      console.log('Upload result:', result);
+      
       if (!result.info || typeof result.info === 'string') {
+        console.error('Invalid upload result:', result);
         throw new Error('Invalid upload result');
       }
 
       // Get the current folder or use default
       const currentFolder = selectedFolder === 'all' ? 'default' : selectedFolder;
+      console.log('Current folder:', currentFolder);
 
       // Prepare image data for MongoDB
       const imageData = {
@@ -70,6 +74,8 @@ export default function GalleryPage() {
         updatedAt: new Date()
       };
 
+      console.log('Sending to MongoDB:', imageData);
+
       // Save to MongoDB
       const response = await fetch('/api/gallery', {
         method: 'POST',
@@ -79,16 +85,22 @@ export default function GalleryPage() {
         body: JSON.stringify(imageData),
       });
 
+      console.log('MongoDB response status:', response.status);
+      
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('MongoDB error:', errorData);
         throw new Error(errorData.error || 'Failed to save image to database');
       }
+
+      const savedImage = await response.json();
+      console.log('Saved image:', savedImage);
 
       // Refresh the gallery
       await fetchImages();
       setError(null);
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error('Error in handleUpload:', error);
       setError('Failed to upload image. Please try again.');
     }
   };
