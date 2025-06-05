@@ -52,18 +52,25 @@ export default function GalleryPage() {
         throw new Error('Invalid upload result');
       }
 
+      // Get the current folder or use default
+      const currentFolder = selectedFolder === 'all' ? 'default' : selectedFolder;
+
+      // Prepare image data for MongoDB
       const imageData = {
         name: result.info.original_filename || 'New Image',
         detail: 'Add details here',
         imageUrl: result.info.secure_url,
-        folder: selectedFolder === 'all' ? 'default' : selectedFolder,
+        folder: currentFolder,
         publicId: result.info.public_id,
         width: result.info.width,
         height: result.info.height,
         format: result.info.format,
-        bytes: result.info.bytes
+        bytes: result.info.bytes,
+        createdAt: new Date(),
+        updatedAt: new Date()
       };
-      
+
+      // Save to MongoDB
       const response = await fetch('/api/gallery', {
         method: 'POST',
         headers: {
@@ -74,10 +81,12 @@ export default function GalleryPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save image');
+        throw new Error(errorData.error || 'Failed to save image to database');
       }
 
+      // Refresh the gallery
       await fetchImages();
+      setError(null);
     } catch (error) {
       console.error('Error uploading image:', error);
       setError('Failed to upload image. Please try again.');

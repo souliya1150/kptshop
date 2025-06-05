@@ -32,19 +32,34 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }
     }
 
-    // Create new image
+    // Ensure folder is set
+    const folder = body.folder || 'default';
+
+    // Create new image with all required fields
     const image = await Gallery.create({
-      ...body,
-      folder: body.folder || 'default',
+      name: body.name,
+      detail: body.detail,
+      imageUrl: body.imageUrl,
+      folder: folder,
+      publicId: body.publicId,
+      width: body.width,
+      height: body.height,
+      format: body.format,
+      bytes: body.bytes,
       createdAt: new Date(),
       updatedAt: new Date()
     });
+
+    // Verify the image was created
+    if (!image) {
+      throw new Error('Failed to create image in database');
+    }
 
     return NextResponse.json(image, { status: 201 });
   } catch (err) {
     console.error('Error creating image:', err);
     return NextResponse.json(
-      { error: 'Failed to create image' },
+      { error: 'Failed to create image in database' },
       { status: 500 }
     );
   }
